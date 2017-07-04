@@ -1,0 +1,387 @@
+fileFormatVersion: 2
+guid: 1b42a8aa6907e5341ae2af647aa099d3
+timeCreated: 1495302817
+licenseType: Free
+SketchUpImporter:
+  generateBackFace: 0
+  mergeCoplanarFaces: 0
+  selectedNodes: 000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d0000000e0000000f000000100000001100000012000000130000001400000015000000160000001700000018000000190000001a0000001b0000001c0000001d0000001e0000001f000000200000002100000022000000230000002400000025000000260000002700000028000000290000002a0000002b0000002c0000002d0000002e0000002f000000300000003100000032000000330000003400000035000000360000003700000038000000390000003a0000003b0000003c0000003d0000003e0000003f000000400000004100000042000000430000004400000045000000460000004700000048000000490000004a0000004b0000004c0000004d0000004e0000004f000000500000005100000052000000530000005400000055000000560000005700000058000000590000005a0000005b0000005c0000005d0000005e0000005f000000600000006100000062000000630000006400000065000000660000006700000068000000690000006a0000006b0000006c0000006d0000006e0000006f000000700000007100000072000000730000007400000075000000760000007700000078000000790000007a0000007b0000007c0000007d0000007e0000007f000000800000008100000082000000830000008400000085000000860000008700000088000000890000008a0000008b000000
+  assetHash:
+    serializedVersion: 2
+    Hash: 66c22b77e73700d6599446ef66f993ee
+  longitude: -105.242139
+  latitude: 40.018309
+  northCorrection: -0
+  fileUnit: 0
+  sketchUpImportData:
+    defaultCamera:
+      position: {x: -0.58946466, y: 1.2806163, z: 1.9444517}
+      lookAt: {x: 0.5795137, y: 0.3383192, z: 0.34756097}
+      up: {x: 0.25393206, y: 0.9028781, z: -0.34688556}
+      fov: 35
+      aspectRatio: 0
+      orthoSize: 1
+      isPerspective: 1
+    scenes: []
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: Component#13
+    100002: Component#13 1
+    100004: Component#14
+    100006: Component#14 1
+    100008: Component#15
+    100010: Component#15 1
+    100012: Component#16
+    100014: Component#16 1
+    100016: Component#19
+    100018: Component#19 1
+    100020: Component#7
+    100022: Component#7 1
+    100024: Component#8
+    100026: Component#8 1
+    100028: //RootNode
+    100030: Group 10
+    100032: Group 105
+    100034: Group 111
+    100036: Group 117
+    100038: Group 13
+    100040: Group 19
+    100042: Group 2
+    100044: Group 25
+    100046: Group 31
+    100048: Group 37
+    100050: Group 4
+    100052: Group 43
+    100054: Group 49
+    100056: Group 55
+    100058: Group 6
+    100060: Group 75
+    100062: Group 8
+    100064: Group 81
+    100066: Group 87
+    100068: Group 93
+    100070: Group 99
+    100072: Group#9
+    100074: Gruppo_4
+    100076: Gruppo_4 1
+    100078: handle
+    100080: handle 1
+    100082: handle 10
+    100084: handle 11
+    100086: handle 12
+    100088: handle 13
+    100090: handle 14
+    100092: handle 15
+    100094: handle 16
+    100096: handle 17
+    100098: handle 18
+    100100: handle 19
+    100102: handle 2
+    100104: handle 20
+    100106: handle 21
+    100108: handle 22
+    100110: handle 23
+    100112: handle 24
+    100114: handle 25
+    100116: handle 26
+    100118: handle 27
+    100120: handle 28
+    100122: handle 29
+    100124: handle 3
+    100126: handle 30
+    100128: handle 31
+    100130: handle 4
+    100132: handle 5
+    100134: handle 6
+    100136: handle 7
+    100138: handle 8
+    100140: handle 9
+    100142: jogo+jantar
+    100144: jogo+jantar 1
+    400000: Component#13
+    400002: Component#13 1
+    400004: Component#14
+    400006: Component#14 1
+    400008: Component#15
+    400010: Component#15 1
+    400012: Component#16
+    400014: Component#16 1
+    400016: Component#19
+    400018: Component#19 1
+    400020: Component#7
+    400022: Component#7 1
+    400024: Component#8
+    400026: Component#8 1
+    400028: //RootNode
+    400030: Group 10
+    400032: Group 105
+    400034: Group 111
+    400036: Group 117
+    400038: Group 13
+    400040: Group 19
+    400042: Group 2
+    400044: Group 25
+    400046: Group 31
+    400048: Group 37
+    400050: Group 4
+    400052: Group 43
+    400054: Group 49
+    400056: Group 55
+    400058: Group 6
+    400060: Group 75
+    400062: Group 8
+    400064: Group 81
+    400066: Group 87
+    400068: Group 93
+    400070: Group 99
+    400072: Group#9
+    400074: Gruppo_4
+    400076: Gruppo_4 1
+    400078: handle
+    400080: handle 1
+    400082: handle 10
+    400084: handle 11
+    400086: handle 12
+    400088: handle 13
+    400090: handle 14
+    400092: handle 15
+    400094: handle 16
+    400096: handle 17
+    400098: handle 18
+    400100: handle 19
+    400102: handle 2
+    400104: handle 20
+    400106: handle 21
+    400108: handle 22
+    400110: handle 23
+    400112: handle 24
+    400114: handle 25
+    400116: handle 26
+    400118: handle 27
+    400120: handle 28
+    400122: handle 29
+    400124: handle 3
+    400126: handle 30
+    400128: handle 31
+    400130: handle 4
+    400132: handle 5
+    400134: handle 6
+    400136: handle 7
+    400138: handle 8
+    400140: handle 9
+    400142: jogo+jantar
+    400144: jogo+jantar 1
+    2300000: Component#14
+    2300002: Component#14 1
+    2300004: Component#15
+    2300006: Component#15 1
+    2300008: Component#16
+    2300010: Component#16 1
+    2300012: Component#19
+    2300014: Component#19 1
+    2300016: Component#7
+    2300018: Component#7 1
+    2300020: Component#8
+    2300022: Component#8 1
+    2300024: Group 10
+    2300026: Group 105
+    2300028: Group 111
+    2300030: Group 117
+    2300032: Group 13
+    2300034: Group 19
+    2300036: Group 2
+    2300038: Group 25
+    2300040: Group 31
+    2300042: Group 37
+    2300044: Group 4
+    2300046: Group 43
+    2300048: Group 49
+    2300050: Group 55
+    2300052: Group 6
+    2300054: Group 75
+    2300056: Group 8
+    2300058: Group 81
+    2300060: Group 87
+    2300062: Group 93
+    2300064: Group 99
+    2300066: Gruppo_4
+    2300068: Gruppo_4 1
+    2300070: handle
+    2300072: handle 1
+    2300074: handle 10
+    2300076: handle 11
+    2300078: handle 12
+    2300080: handle 13
+    2300082: handle 14
+    2300084: handle 15
+    2300086: handle 16
+    2300088: handle 17
+    2300090: handle 18
+    2300092: handle 19
+    2300094: handle 2
+    2300096: handle 20
+    2300098: handle 21
+    2300100: handle 22
+    2300102: handle 23
+    2300104: handle 24
+    2300106: handle 25
+    2300108: handle 26
+    2300110: handle 27
+    2300112: handle 28
+    2300114: handle 29
+    2300116: handle 3
+    2300118: handle 30
+    2300120: handle 31
+    2300122: handle 4
+    2300124: handle 5
+    2300126: handle 6
+    2300128: handle 7
+    2300130: handle 8
+    2300132: handle 9
+    3300000: Component#14
+    3300002: Component#14 1
+    3300004: Component#15
+    3300006: Component#15 1
+    3300008: Component#16
+    3300010: Component#16 1
+    3300012: Component#19
+    3300014: Component#19 1
+    3300016: Component#7
+    3300018: Component#7 1
+    3300020: Component#8
+    3300022: Component#8 1
+    3300024: Group 10
+    3300026: Group 105
+    3300028: Group 111
+    3300030: Group 117
+    3300032: Group 13
+    3300034: Group 19
+    3300036: Group 2
+    3300038: Group 25
+    3300040: Group 31
+    3300042: Group 37
+    3300044: Group 4
+    3300046: Group 43
+    3300048: Group 49
+    3300050: Group 55
+    3300052: Group 6
+    3300054: Group 75
+    3300056: Group 8
+    3300058: Group 81
+    3300060: Group 87
+    3300062: Group 93
+    3300064: Group 99
+    3300066: Gruppo_4
+    3300068: Gruppo_4 1
+    3300070: handle
+    3300072: handle 1
+    3300074: handle 10
+    3300076: handle 11
+    3300078: handle 12
+    3300080: handle 13
+    3300082: handle 14
+    3300084: handle 15
+    3300086: handle 16
+    3300088: handle 17
+    3300090: handle 18
+    3300092: handle 19
+    3300094: handle 2
+    3300096: handle 20
+    3300098: handle 21
+    3300100: handle 22
+    3300102: handle 23
+    3300104: handle 24
+    3300106: handle 25
+    3300108: handle 26
+    3300110: handle 27
+    3300112: handle 28
+    3300114: handle 29
+    3300116: handle 3
+    3300118: handle 30
+    3300120: handle 31
+    3300122: handle 4
+    3300124: handle 5
+    3300126: handle 6
+    3300128: handle 7
+    3300130: handle 8
+    3300132: handle 9
+    4300000: Mesh Group 2
+    4300002: Mesh Group 4
+    4300004: Mesh Group 6
+    4300006: Mesh Group 8
+    4300008: Mesh Group 10
+    4300010: Mesh Group 13
+    4300012: Mesh handle
+    4300014: Mesh Group 31
+    4300016: Mesh Group 49
+    4300018: Mesh Component#16
+    4300020: Mesh Component#14
+    4300022: Mesh Component#15
+    4300024: Mesh Component#8
+    4300026: Mesh Component#7
+    4300028: Mesh Component#19
+    4300030: Mesh Gruppo_4
+  materials:
+    importMaterials: 1
+    materialName: 2
+    materialSearch: 0
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 0.0254
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

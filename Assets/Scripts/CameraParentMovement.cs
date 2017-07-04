@@ -9,7 +9,15 @@ public class CameraParentMovement : MonoBehaviour {
 	public int speed;
 	void Start () {
 		rb = GetComponent<Rigidbody>();
-		movement_locked = false;
+		movement_locked = true;
+		if (Application.platform != RuntimePlatform.Android)
+			StartCoroutine (StartCamera ());
+	}
+
+	IEnumerator StartCamera(){
+		yield return new WaitForEndOfFrame ();
+		//gameObject.GetComponent<Camera> ().enabled = true;
+		Destroy(transform.GetChild(0).GetComponent<GvrHead>());
 	}
 
 	void Update () {
@@ -17,21 +25,17 @@ public class CameraParentMovement : MonoBehaviour {
 		rb.velocity = new Vector3 (0, 0, 0);
 		if (movement_locked) return;
 		
-		if (Input.GetKey("w") || Input.GetKey(KeyCode.UpArrow)) {
-			//rb.MovePosition(transform.position + transform.forward * Time.deltaTime * 3);
-			transform.position += new Vector3(Mathf.Sin(transform.GetChild(0).transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed, 0, Mathf.Cos(transform.GetChild(0).transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed);
+		if (GameObject.Find ("InputMaster").GetComponent<InputModule> ().CheckForPress (buttons.up, true)) {
+			transform.position += new Vector3(Mathf.Sin(transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed, 0, Mathf.Cos(transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed);
 		}
-		if (Input.GetKey("s") || Input.GetKey(KeyCode.DownArrow)) {
-			transform.position -= new Vector3(Mathf.Sin(transform.GetChild(0).transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed, 0, Mathf.Cos(transform.GetChild(0).transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed);
-			//rb.MovePosition(transform.position - transform.forward * Time.deltaTime * 3);
+		if (GameObject.Find ("InputMaster").GetComponent<InputModule> ().CheckForPress (buttons.down, true)) {
+			transform.position -= new Vector3(Mathf.Sin(transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed, 0, Mathf.Cos(transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed);
 		}
-		if (Input.GetKey("a") || Input.GetKey(KeyCode.LeftArrow)) {
-			//rb.MovePosition(transform.position - transform.right * Time.deltaTime * 3);
-			transform.position -= new Vector3(Mathf.Cos((-1)*transform.GetChild(0).transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed, 0, Mathf.Sin((-1)*transform.GetChild(0).transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed);
+		if (GameObject.Find ("InputMaster").GetComponent<InputModule> ().CheckForPress (buttons.left, true)) {
+			transform.position -= new Vector3(Mathf.Cos((-1)*transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed, 0, Mathf.Sin((-1)*transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed);
 		}
-		if (Input.GetKey("d") || Input.GetKey(KeyCode.RightArrow)) {
-			transform.position += new Vector3(Mathf.Cos((-1)*transform.GetChild(0).transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed, 0, Mathf.Sin((-1)*transform.GetChild(0).transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed);
-			//rb.MovePosition(transform.position + transform.right * Time.deltaTime * 3);
+		if (GameObject.Find ("InputMaster").GetComponent<InputModule> ().CheckForPress (buttons.right, true)) {
+			transform.position += new Vector3(Mathf.Cos((-1)*transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed, 0, Mathf.Sin((-1)*transform.localEulerAngles.y*Mathf.PI/180) * Time.deltaTime * speed);
 		}
 	}
 }

@@ -36,12 +36,12 @@ public class GvrHead : MonoBehaviour {
   /// Determines whether to apply the user's head rotation to this gameobject's
   /// orientation.  True means to update the gameobject's orientation with the
   /// user's head rotation, and false means don't modify the gameobject's orientation.
-  public bool trackRotation = true;
+	public bool trackRotation = true;
 
   /// Determines whether to apply ther user's head offset to this gameobject's
   /// position.  True means to update the gameobject's position with the user's head offset,
   /// and false means don't modify the gameobject's position.
-  public bool trackPosition = true;
+	public bool trackPosition = true;
 
   /// The user's head motion will be applied in this object's reference frame
   /// instead of the head object's parent.  A good use case is for head-based
@@ -50,7 +50,7 @@ public class GvrHead : MonoBehaviour {
   /// thus creating a positive feedback loop.  Use an external target object as a
   /// fixed point of reference for the direction the user is looking.  Often, the
   /// grandparent or higher ancestor is a suitable target.
-  public Transform target;
+	public Transform target;
 
   /// Determines whether the head tracking is applied during `LateUpdate()` or
   /// `Update()`.  The default is false, which means it is applied during `LateUpdate()`
@@ -62,29 +62,29 @@ public class GvrHead : MonoBehaviour {
   /// phase, will update the head object first on some frames but second on others.
   /// If this is the case for your game, try switching the head to apply head tracking
   /// during `Update()` by setting this to true.
-  public bool updateEarly = false;
-	private Quaternion r;
-  /// Returns a ray based on the heads position and forward direction, after making
-  /// sure the transform is up to date.  Use to raycast into the scene to determine
-  /// objects that the user is looking at.
-  public Ray Gaze {
-    get {
-      UpdateHead();
-      return new Ray(transform.position, transform.forward);
-    }
-  }
+	public bool updateEarly = false;
+	public Quaternion r;
+	/// Returns a ray based on the heads position and forward direction, after making
+	/// sure the transform is up to date.  Use to raycast into the scene to determine
+	/// objects that the user is looking at.
+	public Ray Gaze {
+		get {
+			UpdateHead();
+			return new Ray(transform.position, transform.forward);
+		}
+	}
 
-  public delegate void HeadUpdatedDelegate(GameObject head);
+	public delegate void HeadUpdatedDelegate(GameObject head);
 
-  /// Called after the head pose has been updated with the latest sensor data.
-  public event HeadUpdatedDelegate OnHeadUpdated;
+	/// Called after the head pose has been updated with the latest sensor data.
+	public event HeadUpdatedDelegate OnHeadUpdated;
 
-  void Awake() {
-    GvrViewer.Create();
-		r = transform.localRotation;
-  }
+	void Awake() {
+		GvrViewer.Create();
+		r = Quaternion.Euler (0, 0, 0);
+	}
 
-  private bool updated;
+	private bool updated;
 
   void Update() {
     updated = false;  // OK to recompute head pose.
@@ -99,36 +99,37 @@ public class GvrHead : MonoBehaviour {
   }
 
   // Compute new head pose.
-  private void UpdateHead() {
-    if (updated) {  // Only one update per frame, please.
-      return;
-    }
-    updated = true;
-    GvrViewer.Instance.UpdateState();
+	private void UpdateHead() {
+		if (updated) {  // Only one update per frame, please.
+			return;
+		}
+		updated = true;
+		GvrViewer.Instance.UpdateState();
+		//r = GameObject.Find ("SceneLoader").GetComponent<LoadScene> ().cam_rot;
 
-
-    if (trackRotation) {
-      var rot = GvrViewer.Instance.HeadPose.Orientation;
-      if (target == null) {
-				//transform.localRotation = r * rot;
-				transform.localRotation = r * rot;
+		if (trackRotation) {
+			var rot = GvrViewer.Instance.HeadPose.Orientation;
+			if (target == null) {
+				transform.localRotation = rot;
 				//Debug.Log (transform.parent.gameObject.transform.localRotation.y);
-      } else {
+			}
+			else {
 				transform.localRotation = target.rotation * rot;
-      }
-    }
+			}
+		}
 
     if (trackPosition) {
       Vector3 pos = GvrViewer.Instance.HeadPose.Position;
       if (target == null) {
         transform.localPosition = pos;
-      } else {
+      }
+	else {
         transform.position = target.position + target.rotation * pos;
       }
     }
 
-    if (OnHeadUpdated != null) {
-      OnHeadUpdated(gameObject);
-    }
-  }
+		if (OnHeadUpdated != null) {
+			OnHeadUpdated(gameObject);
+		}
+	}
 }

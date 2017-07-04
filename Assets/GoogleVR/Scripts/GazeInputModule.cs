@@ -115,21 +115,16 @@ public class GazeInputModule : BaseInputModule {
     UpdateCurrentObject();
     UpdateReticle(gazeObjectPrevious);
 
-	bool isGvrTriggered = Input.GetButtonDown ("Fire1");
-	bool handlePendingClickRequired = !Input.GetButton("Fire1");
+	bool isGvrTriggered = GameObject.Find ("InputMaster").GetComponent<InputModule> ().CheckForPress (buttons.A, false);//Input.GetButtonDown ("Fire1");
+	bool handlePendingClickRequired = !GameObject.Find ("InputMaster").GetComponent<InputModule> ().CheckForPress (buttons.A, false);
 
 #if UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR)
     handlePendingClickRequired &= !GvrController.ClickButton;
     isGvrTriggered |= GvrController.ClickButtonDown;
 #endif  // UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR)
 
-    // Handle input
-	if (!Input.GetButtonDown ("Fire1") && Input.GetButton("Fire1")) {
-      HandleDrag();
-    } else if (Time.unscaledTime - pointerData.clickTime < clickTime) {
-      // Delay new events until clickTime has passed.
-    } else if (!pointerData.eligibleForClick &&
-		(isGvrTriggered || Input.GetButtonDown("Fire1"))) {
+    if (!pointerData.eligibleForClick &&
+		(isGvrTriggered)) {
       // New trigger action.
       HandleTrigger();
     } else if (handlePendingClickRequired) {

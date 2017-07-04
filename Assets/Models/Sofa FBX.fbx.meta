@@ -1,0 +1,197 @@
+fileFormatVersion: 2
+guid: 8bd820b00ee57c344b575f35de10e61e
+timeCreated: 1495966261
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: Back
+    100002: Base
+    100004: Camera
+    100006: Camera_1
+    100008: Camera_2
+    100010: Camera_3
+    100012: Camera_4
+    100014: Cube
+    100016: Cube_1
+    100018: Cube_2
+    100020: Cube_2_2
+    100022: Cube_3
+    100024: Cube_3_2
+    100026: Cube_4
+    100028: Cube_5
+    100030: Cube_6
+    100032: Cube_7
+    100034: Floor
+    100036: Left_Arm
+    100038: Legs
+    100040: Lensflare_Source
+    100042: Moon
+    100044: Moon_Light
+    100046: Physical_Sky
+    100048: Pillow_1
+    100050: Pillow_1_1
+    100052: Pillow_1_2
+    100054: Pillow_1_2_2
+    100056: Pillow_1_3
+    100058: Pillow_1_3_2
+    100060: Pillow_1_4
+    100062: Pillow_1_5
+    100064: Right_Arm
+    100066: Seat_cussion_L
+    100068: Seat_Cussion_R
+    100070: Shadow_Plane
+    100072: Sky_Dome
+    100074: Sky_Null
+    100076: Sofa
+    100078: //RootNode
+    100080: Sun
+    100082: Sun_light
+    400000: Back
+    400002: Base
+    400004: Camera
+    400006: Camera_1
+    400008: Camera_2
+    400010: Camera_3
+    400012: Camera_4
+    400014: Cube
+    400016: Cube_1
+    400018: Cube_2
+    400020: Cube_2_2
+    400022: Cube_3
+    400024: Cube_3_2
+    400026: Cube_4
+    400028: Cube_5
+    400030: Cube_6
+    400032: Cube_7
+    400034: Floor
+    400036: Left_Arm
+    400038: Legs
+    400040: Lensflare_Source
+    400042: Moon
+    400044: Moon_Light
+    400046: Physical_Sky
+    400048: Pillow_1
+    400050: Pillow_1_1
+    400052: Pillow_1_2
+    400054: Pillow_1_2_2
+    400056: Pillow_1_3
+    400058: Pillow_1_3_2
+    400060: Pillow_1_4
+    400062: Pillow_1_5
+    400064: Right_Arm
+    400066: Seat_cussion_L
+    400068: Seat_Cussion_R
+    400070: Shadow_Plane
+    400072: Sky_Dome
+    400074: Sky_Null
+    400076: Sofa
+    400078: //RootNode
+    400080: Sun
+    400082: Sun_light
+    2300000: Cube
+    2300002: Cube_1
+    2300004: Cube_2
+    2300006: Cube_2_2
+    2300008: Cube_3
+    2300010: Cube_3_2
+    2300012: Cube_4
+    2300014: Cube_5
+    2300016: Cube_6
+    2300018: Cube_7
+    2300020: Pillow_1
+    2300022: Pillow_1_2_2
+    2300024: Pillow_1_3_2
+    2300026: Pillow_1_5
+    3300000: Cube
+    3300002: Cube_1
+    3300004: Cube_2
+    3300006: Cube_2_2
+    3300008: Cube_3
+    3300010: Cube_3_2
+    3300012: Cube_4
+    3300014: Cube_5
+    3300016: Cube_6
+    3300018: Cube_7
+    3300020: Pillow_1
+    3300022: Pillow_1_2_2
+    3300024: Pillow_1_3_2
+    3300026: Pillow_1_5
+    4300000: Cube_3
+    4300002: Cube_2
+    4300004: Cube_1
+    4300006: Cube
+    4300008: Pillow_1
+    4300010: Pillow_1_2_2
+    4300012: Pillow_1_3_2
+    4300014: Pillow_1_5
+    4300016: Cube_2_2
+    4300018: Cube_3_2
+    4300020: Cube_4
+    4300022: Cube_5
+    4300024: Cube_6
+    4300026: Cube_7
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

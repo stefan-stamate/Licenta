@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 07507a3d700e0e64091c88eb924e89c0
+timeCreated: 1497903860
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - options_panel: {fileID: 1000013404115868, guid: 8a34444b14e59964796f03c1b7a9d87b,
+      type: 2}
+  - button1: {fileID: 1000011714581754, guid: 277d3f63137749042a8199d9e1e79dde, type: 2}
+  - object_positioner: {fileID: 1000011977841432, guid: 71bf4f5a95a25094eba180c01392eaef,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

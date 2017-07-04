@@ -1,0 +1,215 @@
+fileFormatVersion: 2
+guid: 87cd03c641326224980806e815b8de59
+timeCreated: 1496572903
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: Cone01
+    100002: Cone02
+    100004: Cone03
+    100006: Ellipse02
+    100008: Ellipse03
+    100010: Ellipse04
+    100012: Ellipse05
+    100014: Ellipse06
+    100016: Ellipse07
+    100018: Ellipse08
+    100020: Line01
+    100022: Line02
+    100024: Line03
+    100026: Line04
+    100028: Line09
+    100030: Line21
+    100032: Line22
+    100034: Line23
+    100036: Line24
+    100038: Line25
+    100040: Line26
+    100042: Line27
+    100044: //RootNode
+    100046: Luster v2
+    100048: Object01
+    100050: Object02
+    100052: Object03
+    100054: Sphere01
+    100056: Sphere02
+    100058: Sphere03
+    400000: Cone01
+    400002: Cone02
+    400004: Cone03
+    400006: Ellipse02
+    400008: Ellipse03
+    400010: Ellipse04
+    400012: Ellipse05
+    400014: Ellipse06
+    400016: Ellipse07
+    400018: Ellipse08
+    400020: Line01
+    400022: Line02
+    400024: Line03
+    400026: Line04
+    400028: Line09
+    400030: Line21
+    400032: Line22
+    400034: Line23
+    400036: Line24
+    400038: Line25
+    400040: Line26
+    400042: Line27
+    400044: //RootNode
+    400046: Luster v2
+    400048: Object01
+    400050: Object02
+    400052: Object03
+    400054: Sphere01
+    400056: Sphere02
+    400058: Sphere03
+    2300000: Cone01
+    2300002: Cone02
+    2300004: Cone03
+    2300006: Ellipse02
+    2300008: Ellipse03
+    2300010: Ellipse04
+    2300012: Ellipse05
+    2300014: Ellipse06
+    2300016: Ellipse07
+    2300018: Ellipse08
+    2300020: Line01
+    2300022: Line02
+    2300024: Line03
+    2300026: Line04
+    2300028: Line09
+    2300030: Line21
+    2300032: Line22
+    2300034: Line23
+    2300036: Line24
+    2300038: Line25
+    2300040: Line26
+    2300042: Line27
+    2300044: Object01
+    2300046: Object02
+    2300048: Object03
+    2300050: Sphere01
+    2300052: Sphere02
+    2300054: Sphere03
+    3300000: Cone01
+    3300002: Cone02
+    3300004: Cone03
+    3300006: Ellipse02
+    3300008: Ellipse03
+    3300010: Ellipse04
+    3300012: Ellipse05
+    3300014: Ellipse06
+    3300016: Ellipse07
+    3300018: Ellipse08
+    3300020: Line01
+    3300022: Line02
+    3300024: Line03
+    3300026: Line04
+    3300028: Line09
+    3300030: Line21
+    3300032: Line22
+    3300034: Line23
+    3300036: Line24
+    3300038: Line25
+    3300040: Line26
+    3300042: Line27
+    3300044: Object01
+    3300046: Object02
+    3300048: Object03
+    3300050: Sphere01
+    3300052: Sphere02
+    3300054: Sphere03
+    4300000: Line09
+    4300002: Ellipse02
+    4300004: Ellipse03
+    4300006: Ellipse04
+    4300008: Ellipse05
+    4300010: Ellipse06
+    4300012: Ellipse07
+    4300014: Ellipse08
+    4300016: Line04
+    4300018: Line01
+    4300020: Line02
+    4300022: Line03
+    4300024: Object01
+    4300026: Cone01
+    4300028: Cone02
+    4300030: Line23
+    4300032: Line24
+    4300034: Object02
+    4300036: Cone03
+    4300038: Line26
+    4300040: Line27
+    4300042: Object03
+    4300044: Sphere01
+    4300046: Line21
+    4300048: Sphere02
+    4300050: Line22
+    4300052: Sphere03
+    4300054: Line25
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

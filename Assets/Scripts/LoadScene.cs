@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine.Rendering;
+using System.Linq;
 
 public class LoadScene : MonoBehaviour {
 
@@ -11,6 +12,7 @@ public class LoadScene : MonoBehaviour {
 		public float x_pos,z_pos;
 		public int orientation;// pe ce directie se deschide usa; 1-> x, 2->z
 		public int hinge_pos;//pe ce directie este hinge-ul 1->sus/dreapta(+), 2->jos/stanga(-)
+		public GameObject instance;
 	};
 
 	public class Window{
@@ -25,9 +27,8 @@ public class LoadScene : MonoBehaviour {
 		public float x_pos,z_pos;
 		public int orientation;// 1-> +0.1x, 2-> +0.1z, 3-> -0.1x, 4-> -0.1z
 
-		//acelasi perete ar putea aparea in doua 2 fete distincte
-		public Wall twin_wall;
-		public GameObject gameObject;
+		public Wall twin_wall;//acelasi perete ar putea aparea in 2 camere si e necesara legarea celor 2 instante
+		public List<GameObject> comp_gameObjects;//un wall poate fi compus din mai multe wall-uri mai mici
 
 		public bool with_door;
 		public Door d;
@@ -42,7 +43,7 @@ public class LoadScene : MonoBehaviour {
 			with_window=false;
 			d=null;
 			twin_wall=null;
-			gameObject=null;
+			comp_gameObjects=new List<GameObject>();
 		}
 	};
 
@@ -50,18 +51,142 @@ public class LoadScene : MonoBehaviour {
 	public float height;
 
 	public GameObject wall_prefab;
-	public GameObject door_body_prefab;
 	public GameObject door_interaction_prefab;
-	public GameObject window_prefab;
+	public GameObject window_parent;
 
-
-	private string fileName="floorplan.obj";
+	//private string fileName="floorplan.obj";
 	private string floorplan_info="";
-	private float original_height=3;
-	private float original_uni_scale=5;
+	//------private float original_uni_scale=5;
 	private float wall_thickness = 0.2f;
-	private float door_scale=1.3f;
-	private float door_unit_size=0.25f;//spune care este lungimea usii din prefab si trebuie sa ma raportez la ea cand setez scale-ul unei usi noi
+	[HideInInspector]
+	public float tier1_door_size = 0.25f;
+	[HideInInspector]
+	public float tier2_door_size = 0.21f;
+	[HideInInspector]
+	public float tier1_window_size = 0.5f;
+	[HideInInspector]
+	public float tier2_window_size = 0.3f;
+
+	private GameObject[] door1_prefabs;
+	private GameObject[] door2_prefabs;
+	private GameObject[] window1_prefabs;
+	private GameObject[] window2_prefabs;
+
+	public GameObject CreateDoor(float x_pos,float z_pos,float x_length,float z_length,int orientation, int hinge_pos){
+		GameObject d;
+		int tier = 2;
+		if ((orientation == 1 && z_length == tier1_door_size) || (orientation == 2 && x_length == tier1_door_size))
+			tier = 1;
+
+		if (tier == 1) 
+			d = Instantiate (door1_prefabs [Random.Range (0, door1_prefabs.Length)]);
+		else //tier == 2
+			d = Instantiate (door2_prefabs [Random.Range (0, door2_prefabs.Length)]);
+
+		d.transform.position = new Vector3 (x_pos*uni_scale, height * 3 / 8, z_pos*uni_scale);
+		float rot;
+		if (orientation == 1) 
+			rot = 90;
+		else
+			rot = 0;
+		
+		if (hinge_pos == 2)
+			rot += 180;
+		d.transform.rotation = Quaternion.Euler (0, rot, 0);
+		GameObject e = GameObject.Instantiate (door_interaction_prefab);
+		///the name will have appended (Clone)
+		e.GetComponent<AuxObjectParent> ().path = "Doors/Tier " + tier + "/prefabs/" + d.name.Remove (d.name.Length - 7);
+		if (orientation == 1) {
+			if (hinge_pos == 1) {
+				e.transform.position = new Vector3 (x_pos * uni_scale, height * 3 / 8, (z_pos - z_length) * uni_scale);
+				e.GetComponent<BoxCollider> ().center = new Vector3 (-z_length * uni_scale / e.transform.localScale.x, 0, 0);
+				e.GetComponent<DoorBehaviour> ().dir = (int)Mathf.Sign (x_length) * (-1);
+			}
+			else {
+				e.transform.position = new Vector3 (x_pos * uni_scale, height * 3 / 8, (z_pos + z_length) * uni_scale);
+				e.GetComponent<BoxCollider> ().center = new Vector3 (z_length * uni_scale / e.transform.localScale.x,0,0);
+				e.GetComponent<DoorBehaviour> ().dir = (int)Mathf.Sign (x_length);
+			}
+				
+			e.transform.rotation = Quaternion.Euler (0, 90, 0);
+			e.GetComponent<BoxCollider> ().size = new Vector3 (z_length * 2 * uni_scale, height * 3 / 4, e.GetComponent<BoxCollider> ().size.z);
+		}
+		else{
+			if (hinge_pos == 1) {
+				e.transform.position = new Vector3 ((x_pos + x_length) * uni_scale, height * 3 / 8, z_pos * uni_scale);
+				e.GetComponent<BoxCollider> ().center = new Vector3 (-x_length * uni_scale / e.transform.localScale.x, 0, 0);
+				e.GetComponent<DoorBehaviour> ().dir = (int)Mathf.Sign (z_length) * (-1);
+			}
+			else {
+				e.transform.position = new Vector3 ((x_pos - x_length) * uni_scale, height * 3 / 8, z_pos * uni_scale);
+				e.GetComponent<BoxCollider> ().center = new Vector3 (x_length * uni_scale / e.transform.localScale.x, 0, 0);
+				e.GetComponent<DoorBehaviour> ().dir = (int)Mathf.Sign (z_length);
+			}
+				
+			e.transform.rotation = Quaternion.Euler (0, 0, 0);
+			e.GetComponent<BoxCollider> ().size = new Vector3 (x_length * 2 * uni_scale, height * 3 / 4, e.GetComponent<BoxCollider> ().size.z);
+
+		}
+		d.transform.parent = e.transform;
+		return e;
+	}
+
+	public GameObject CreateWindow(Window window, int wall_orientation){
+		
+		GameObject w;
+		int tier = 2;
+		if (window.length == tier1_window_size)
+			tier = 1;
+
+		if (tier == 1) 
+			w = Instantiate (window1_prefabs [ Random.Range (0, window1_prefabs.Length)]);
+		else //tier == 2
+			w = Instantiate (window2_prefabs [Random.Range (0, window2_prefabs.Length)]);
+
+		GameObject p = GameObject.Instantiate (window_parent);
+		///the name will have appended (Clone)
+		p.GetComponent<AuxObjectParent> ().path = "Windows/Tier " + tier + "/prefabs/" + w.name.Remove (w.name.Length - 7);
+		if (window.orientation == 1)
+			p.GetComponent<BoxCollider> ().size = new Vector3 (p.GetComponent<BoxCollider> ().size.x, height * 10 / 16, window.length * 2 * uni_scale);
+		else
+			p.GetComponent<BoxCollider> ().size = new Vector3 (window.length * 2 * uni_scale, height * 10 / 16, p.GetComponent<BoxCollider> ().size.z);
+
+		//w.transform.localScale = new Vector3 (w.transform.localScale.x * uni_scale / original_scale, w.transform.localScale.y, w.transform.localScale.z);
+		w.transform.position = new Vector3 (window.x_pos*uni_scale, height * 9 / 16, window.z_pos*uni_scale);//------fara x_add, z_add???
+		p.transform.position = w.transform.position;
+		if (wall_orientation == 1)
+			w.transform.localRotation = Quaternion.Euler (0, 90, 0);
+		else if (wall_orientation == 2)
+			w.transform.localRotation = Quaternion.Euler (0, 0, 0);
+		else if (wall_orientation == 3)
+			w.transform.localRotation = Quaternion.Euler (0, 270, 0);
+		else // wall_orientation == 4
+			w.transform.localRotation = Quaternion.Euler (0, 180, 0);
+		w.transform.parent = p.transform;
+
+		/*
+		//also, for every window a new point light will be created to further improve lighting
+		GameObject lightGameObject = new GameObject("Window Light");
+		Light lightComp = lightGameObject.AddComponent<Light>();
+		lightGameObject.transform.position = new Vector3(w.transform.position.x,w.transform.position.y+6,w.transform.position.z);
+
+		if (wall_orientation == 1)
+			lightGameObject.transform.position = new Vector3 (lightGameObject.transform.position.x - 4, lightGameObject.transform.position.y, lightGameObject.transform.position.z);
+		else if (wall_orientation == 2)
+			lightGameObject.transform.position = new Vector3 (lightGameObject.transform.position.x, lightGameObject.transform.position.y, lightGameObject.transform.position.z - 4);
+		else if (wall_orientation == 3)
+			lightGameObject.transform.position = new Vector3 (lightGameObject.transform.position.x + 4, lightGameObject.transform.position.y, lightGameObject.transform.position.z);
+		else // wall_orientation == 4
+			lightGameObject.transform.position = new Vector3 (lightGameObject.transform.position.x, lightGameObject.transform.position.y, lightGameObject.transform.position.z + 4);
+
+		lightComp.range = 80;
+		lightComp.intensity = 1;
+		lightComp.bounceIntensity = 0;
+		lightComp.shadows = LightShadows.Hard;
+		lightComp.cullingMask = 513;
+		*/
+		return p;
+	}
 
 	IEnumerator GetFloorplanData(string filePath) {
 		if (filePath.Contains("://")) {
@@ -72,9 +197,11 @@ public class LoadScene : MonoBehaviour {
 			floorplan_info = System.IO.File.ReadAllText(filePath);
 	}
 
-	IEnumerator GenerateHouse(){
-		string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
+	IEnumerator GenerateHouse(string filePath){
+		//string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
 		yield return StartCoroutine(GetFloorplanData(filePath));
+
+		GameObject cam = GameObject.Find ("Camera Parent");
 
 		string[] lines = floorplan_info.Split("\n"[0]);
 		List<Vector3> positions = new List<Vector3> ();
@@ -84,11 +211,11 @@ public class LoadScene : MonoBehaviour {
 		List<List<int>> window_points = new List<List<int>> ();//keep them separate so they don't end up as rooms
 		List<bool> has_window= new List<bool>();
 		int max_valid_point=-1;//store the number of points in the given floorplan
+		float x_min,x_max,z_min,z_max;
+		x_min = x_max = z_min = z_max = 0;
 
 		foreach (string l in lines)
-		{	
-			//string l = r.ReadLine( );
-			//Debug.Log(l);
+		{
 			string[] tokens = l.Split(" "[0]);
 			if(tokens.Length==0) continue;
 			if(tokens[0].Length==0) continue;
@@ -220,6 +347,17 @@ public class LoadScene : MonoBehaviour {
 						w.z_length = Mathf.Abs (positions [valid_points [i] [j]].z - positions [valid_points [i] [0]].z) / 2;
 					}
 
+					if (i == 0 && j == 0) {
+						x_min = x_max = w.x_pos;
+						z_min = z_max = w.z_pos;
+					}
+					else {
+						if (x_min > w.x_pos) x_min = w.x_pos;
+						if (x_max < w.x_pos) x_max = w.x_pos;
+						if (z_min > w.z_pos) z_min = w.z_pos;
+						if (z_max < w.z_pos) z_max = w.z_pos;
+					}
+
 					for (int l = 0; l < rooms.Count; l++) {
 						for (int k = 0; k < rooms [l].Count; k++) {
 							if (w.x_pos == rooms [l] [k].x_pos && w.z_pos == rooms [l] [k].z_pos) {
@@ -254,8 +392,8 @@ public class LoadScene : MonoBehaviour {
 								d.z_length = Mathf.Abs (positions [valid_points [l] [0]].z - positions [valid_points [l] [1]].z)/2;//asta e latimea usii
 
 								if (d.z_length < 0.1)
-									d.z_length = 0.13f;
-								else d.z_length = 0.20f;
+									d.z_length = tier2_door_size;
+								else d.z_length = tier1_door_size;
 
 								if (positions [valid_points [l] [0]].z > positions [valid_points [l] [1]].z)
 									d.hinge_pos = 2;//---1
@@ -273,8 +411,8 @@ public class LoadScene : MonoBehaviour {
 								d.z_length = Mathf.Abs (positions [valid_points [l] [0]].z - positions [valid_points [l] [2]].z)/2;
 
 								if (d.z_length < 0.1)
-									d.z_length = 0.13f;
-								else d.z_length = 0.20f;
+									d.z_length = tier2_door_size;
+								else d.z_length = tier1_door_size;
 
 								if (positions [valid_points [l] [0]].z > positions [valid_points [l] [2]].z)
 									d.hinge_pos = 2;
@@ -292,8 +430,8 @@ public class LoadScene : MonoBehaviour {
 								d.x_length = Mathf.Abs (positions [valid_points [l] [0]].x - positions [valid_points [l] [1]].x)/2;
 
 								if (d.x_length < 0.1)
-									d.x_length = 0.13f;
-								else d.x_length = 0.20f;
+									d.x_length = tier2_door_size;
+								else d.x_length = tier1_door_size;
 
 								if (positions [valid_points [l] [0]].x > positions [valid_points [l] [1]].x)
 									d.hinge_pos = 1;
@@ -311,8 +449,8 @@ public class LoadScene : MonoBehaviour {
 								d.x_length = Mathf.Abs (positions [valid_points [l] [0]].x - positions [valid_points [l] [2]].x)/2;
 
 								if (d.x_length < 0.1)
-									d.x_length = 0.13f;
-								else d.x_length = 0.20f;
+									d.x_length = tier2_door_size;
+								else d.x_length = tier1_door_size;
 
 								if (positions [valid_points [l] [0]].x > positions [valid_points [l] [2]].x)
 									d.hinge_pos = 1;
@@ -337,6 +475,32 @@ public class LoadScene : MonoBehaviour {
 			}
 		}
 
+		//render the doors
+		for (int i = 0; i < doors.Count; i++) {
+			
+			GameObject d = CreateDoor (doors [i].x_pos, doors [i].z_pos, doors [i].x_length, doors [i].z_length, doors [i].orientation, doors [i].hinge_pos);
+			doors [i].instance = d;
+
+			//see if the door connects with the outside and if so
+			//put the user in front of it
+			if (doors [i].x_pos == x_min) {
+				cam.transform.position = new Vector3 (doors [i].x_pos * uni_scale - 3, 2, doors [i].z_pos * uni_scale);
+				//cam_rot = Quaternion.Euler (0, 270, 0);
+			}
+			else if (doors [i].x_pos == x_max) {
+				cam.transform.position = new Vector3 (doors [i].x_pos * uni_scale + 3, 2, doors [i].z_pos * uni_scale);
+				//cam_rot = Quaternion.Euler (0, 90, 0);
+			}
+			else if (doors [i].z_pos == z_min) {
+				cam.transform.position = new Vector3 (doors [i].x_pos * uni_scale, 2, doors [i].z_pos * uni_scale - 3);
+				//cam_rot = Quaternion.Euler (0, 0, 0);
+			}
+			else if (doors [i].z_pos == z_max) {
+				cam.transform.position = new Vector3 (doors [i].x_pos * uni_scale, 2, doors [i].z_pos * uni_scale + 3);
+				//cam_rot = Quaternion.Euler (0, 180, 0);
+			}
+		}
+
 		//the remaining points in window_points are turned into actual window types
 		//and are assigned to a wall in rooms
 		for (int l = 0; l < window_points.Count; l++) {
@@ -353,8 +517,9 @@ public class LoadScene : MonoBehaviour {
 				w.length = Mathf.Abs (positions [window_points [l] [0]].x - w.x_pos);
 				w.orientation = 2;
 			}
-			if (w.length > 0.3f) w.length = 0.5f;
-			else w.length = 0.3f;
+
+			if (w.length > 0.8f) w.length = tier1_window_size;
+			else w.length = tier2_window_size;
 
 			bool with_wall = false;
 			for (int i = 0; i < rooms.Count && !with_wall; i++) {
@@ -377,9 +542,6 @@ public class LoadScene : MonoBehaviour {
 					}
 				}
 			}
-			if (!with_wall) print("eroare");
-
-			//windows.Add (w);
 		}
 
 		//determine the orientation of the walls
@@ -457,10 +619,12 @@ public class LoadScene : MonoBehaviour {
 
 		//render the rooms' walls
 		float x_aux,z_aux;
+		List<GameObject> immediate_neighbours;
 		List<GameObject> outer_walls = new List<GameObject> ();
 		for (int i = 0; i < rooms.Count; i++) {
 			List<GameObject> walls=new List<GameObject>();
 			for (int j = 0; j < rooms[i].Count; j++) {
+
 				x_aux = rooms[i][j].x_pos * uni_scale;
 				z_aux = rooms[i][j].z_pos * uni_scale;
 
@@ -475,77 +639,120 @@ public class LoadScene : MonoBehaviour {
 					z_add -= 0.1f;
 
 				if (rooms [i] [j].with_door) {
-					GameObject w1 = GameObject.Instantiate (wall_prefab);//--------cele 3 ar trebui sa fie distruse toate odata
+					GameObject w1 = GameObject.Instantiate (wall_prefab);
 					GameObject w2 = GameObject.Instantiate (wall_prefab);
 					GameObject w3 = GameObject.Instantiate (wall_prefab);
 
+					rooms [i] [j].comp_gameObjects.Add (w1);
+					rooms [i] [j].comp_gameObjects.Add (w2);
+					rooms [i] [j].comp_gameObjects.Add (w3);
+
+					//cele 3 trebuie sa fie distruse toate odata
+					immediate_neighbours = new List<GameObject> ();
+					immediate_neighbours.Add (w1);
+					immediate_neighbours.Add (w2);
+					immediate_neighbours.Add (w3);
+
+					w1.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+					w2.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+					w3.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+
 					//any room that has no window will appear darker because light has nowhere to come through
-					if (!has_window[i]) w1.layer = w2.layer = w3.layer = 8;
+					//if (!has_window[i]) w1.layer = w2.layer = w3.layer = 8;
 
 					w1.transform.position = new Vector3 (rooms [i] [j].d.x_pos * uni_scale + x_add, height * 7 / 8, rooms [i] [j].d.z_pos * uni_scale + z_add);
 					if (rooms [i] [j].d.orientation == 1) {
-						w1.transform.localScale = new Vector3 (wall_thickness, height * 2 / 8, rooms [i] [j].d.z_length * 2 * door_scale * uni_scale);
+						w1.transform.localScale = new Vector3 (wall_thickness, height * 2 / 8, rooms [i] [j].d.z_length * 2 * uni_scale);
 
-						w2.transform.position = new Vector3 (x_aux + x_add, height / 2, (rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length * door_scale + rooms [i] [j].z_pos - rooms [i] [j].z_length) / 2 * uni_scale + z_add);
-						w3.transform.position = new Vector3 (x_aux + x_add, height / 2, (rooms [i] [j].d.z_pos + rooms [i] [j].d.z_length * door_scale + rooms [i] [j].z_pos + rooms [i] [j].z_length) / 2 * uni_scale + z_add);
+						w2.transform.position = new Vector3 (x_aux + x_add, height / 2, (rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length + rooms [i] [j].z_pos - rooms [i] [j].z_length) / 2 * uni_scale + z_add);
+						w3.transform.position = new Vector3 (x_aux + x_add, height / 2, (rooms [i] [j].d.z_pos + rooms [i] [j].d.z_length + rooms [i] [j].z_pos + rooms [i] [j].z_length) / 2 * uni_scale + z_add);
 
-						w2.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length * door_scale - rooms [i] [j].z_pos + rooms [i] [j].z_length) * uni_scale);
-						w3.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].z_pos + rooms [i] [j].z_length - rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length * door_scale) * uni_scale);
+						w2.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length - rooms [i] [j].z_pos + rooms [i] [j].z_length) * uni_scale);
+						w3.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].z_pos + rooms [i] [j].z_length - rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length) * uni_scale);
 					}
 					else if (rooms [i] [j].d.orientation == 2) {
-						w1.transform.localScale = new Vector3 (rooms [i] [j].d.x_length * 2 * door_scale * uni_scale, height * 2 / 8, wall_thickness);
+						w1.transform.localScale = new Vector3 (rooms [i] [j].d.x_length * 2 * uni_scale, height * 2 / 8, wall_thickness);
 
-						w2.transform.position = new Vector3 ((rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length * door_scale + rooms [i] [j].x_pos - rooms [i] [j].x_length) / 2 * uni_scale + x_add, height / 2, z_aux + z_add);
-						w3.transform.position = new Vector3 ((rooms [i] [j].d.x_pos + rooms [i] [j].d.x_length * door_scale + rooms [i] [j].x_pos + rooms [i] [j].x_length) / 2 * uni_scale + x_add, height / 2, z_aux + z_add);
+						w2.transform.position = new Vector3 ((rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length + rooms [i] [j].x_pos - rooms [i] [j].x_length) / 2 * uni_scale + x_add, height / 2, z_aux + z_add);
+						w3.transform.position = new Vector3 ((rooms [i] [j].d.x_pos + rooms [i] [j].d.x_length + rooms [i] [j].x_pos + rooms [i] [j].x_length) / 2 * uni_scale + x_add, height / 2, z_aux + z_add);
 
-						w2.transform.localScale = new Vector3 ((rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length * door_scale - rooms [i] [j].x_pos + rooms [i] [j].x_length) * uni_scale, height, wall_thickness);
-						w3.transform.localScale = new Vector3 ((rooms [i] [j].x_pos + rooms [i] [j].x_length - rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length * door_scale) * uni_scale, height, wall_thickness);
+						w2.transform.localScale = new Vector3 ((rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length - rooms [i] [j].x_pos + rooms [i] [j].x_length) * uni_scale, height, wall_thickness);
+						w3.transform.localScale = new Vector3 ((rooms [i] [j].x_pos + rooms [i] [j].x_length - rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length) * uni_scale, height, wall_thickness);
 					}
 						
 					walls.Add (w1);
 					walls.Add (w2);
 					walls.Add (w3);
 
-					//-------set twins in walls' scripts
+					List<GameObject> aux_objs = new List<GameObject> ();
+					aux_objs.Add (rooms [i] [j].d.instance);
+					w1.GetComponent<WallBehaviour> ().aux_objs = aux_objs;
+					w2.GetComponent<WallBehaviour> ().aux_objs = aux_objs;
+					w3.GetComponent<WallBehaviour> ().aux_objs = aux_objs;
 
 					if (rooms [i] [j].twin_wall == null) {//if it doesn't have a twin then it's an outer wall
-						GameObject ow1 = GameObject.Instantiate (wall_prefab);//--------cele 3 ar trebui sa fie distruse toate odata
+						GameObject ow1 = GameObject.Instantiate (wall_prefab);
 						GameObject ow2 = GameObject.Instantiate (wall_prefab);
 						GameObject ow3 = GameObject.Instantiate (wall_prefab);
 
 						ow1.transform.position = new Vector3 (rooms [i] [j].d.x_pos * uni_scale - x_add, height * 7 / 8, rooms [i] [j].d.z_pos * uni_scale - z_add);
 						if (rooms [i] [j].d.orientation == 1) {
-							ow1.transform.localScale = new Vector3 (wall_thickness, height * 2 / 8, rooms [i] [j].d.z_length * 2 * door_scale * uni_scale);
+							ow1.transform.localScale = new Vector3 (wall_thickness, height * 2 / 8, rooms [i] [j].d.z_length * 2 * uni_scale);
 
-							ow2.transform.position = new Vector3 (x_aux - x_add, height / 2, (rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length * door_scale + rooms [i] [j].z_pos - rooms [i] [j].z_length) / 2 * uni_scale - z_add);
-							ow3.transform.position = new Vector3 (x_aux - x_add, height / 2, (rooms [i] [j].d.z_pos + rooms [i] [j].d.z_length * door_scale + rooms [i] [j].z_pos + rooms [i] [j].z_length) / 2 * uni_scale - z_add);
+							ow2.transform.position = new Vector3 (x_aux - x_add, height / 2, (rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length + rooms [i] [j].z_pos - rooms [i] [j].z_length) / 2 * uni_scale - z_add);
+							ow3.transform.position = new Vector3 (x_aux - x_add, height / 2, (rooms [i] [j].d.z_pos + rooms [i] [j].d.z_length + rooms [i] [j].z_pos + rooms [i] [j].z_length) / 2 * uni_scale - z_add);
 
-							ow2.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length * door_scale - rooms [i] [j].z_pos + rooms [i] [j].z_length) * uni_scale);
-							ow3.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].z_pos + rooms [i] [j].z_length - rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length * door_scale) * uni_scale);
+							ow2.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length - rooms [i] [j].z_pos + rooms [i] [j].z_length) * uni_scale);
+							ow3.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].z_pos + rooms [i] [j].z_length - rooms [i] [j].d.z_pos - rooms [i] [j].d.z_length) * uni_scale);
 						}
 						else if (rooms [i] [j].d.orientation == 2) {
-							ow1.transform.localScale = new Vector3 (rooms [i] [j].d.x_length * 2 * door_scale * uni_scale, height * 2 / 8, wall_thickness);
+							ow1.transform.localScale = new Vector3 (rooms [i] [j].d.x_length * 2 * uni_scale, height * 2 / 8, wall_thickness);
 
-							ow2.transform.position = new Vector3 ((rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length * door_scale + rooms [i] [j].x_pos - rooms [i] [j].x_length) / 2 * uni_scale - x_add, height / 2, z_aux - z_add);
-							ow3.transform.position = new Vector3 ((rooms [i] [j].d.x_pos + rooms [i] [j].d.x_length * door_scale + rooms [i] [j].x_pos + rooms [i] [j].x_length) / 2 * uni_scale - x_add, height / 2, z_aux - z_add);
+							ow2.transform.position = new Vector3 ((rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length + rooms [i] [j].x_pos - rooms [i] [j].x_length) / 2 * uni_scale - x_add, height / 2, z_aux - z_add);
+							ow3.transform.position = new Vector3 ((rooms [i] [j].d.x_pos + rooms [i] [j].d.x_length + rooms [i] [j].x_pos + rooms [i] [j].x_length) / 2 * uni_scale - x_add, height / 2, z_aux - z_add);
 
-							ow2.transform.localScale = new Vector3 ((rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length * door_scale - rooms [i] [j].x_pos + rooms [i] [j].x_length) * uni_scale, height, wall_thickness);
-							ow3.transform.localScale = new Vector3 ((rooms [i] [j].x_pos + rooms [i] [j].x_length - rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length * door_scale) * uni_scale, height, wall_thickness);
+							ow2.transform.localScale = new Vector3 ((rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length - rooms [i] [j].x_pos + rooms [i] [j].x_length) * uni_scale, height, wall_thickness);
+							ow3.transform.localScale = new Vector3 ((rooms [i] [j].x_pos + rooms [i] [j].x_length - rooms [i] [j].d.x_pos - rooms [i] [j].d.x_length) * uni_scale, height, wall_thickness);
 						}
+
+						w1.GetComponent<WallBehaviour> ().destructible = false;
+						w2.GetComponent<WallBehaviour> ().destructible = false;
+						w3.GetComponent<WallBehaviour> ().destructible = false;
+
+						w1.GetComponent<WallBehaviour> ().twin = ow1;
+						w2.GetComponent<WallBehaviour> ().twin = ow2;
+						w3.GetComponent<WallBehaviour> ().twin = ow3;
+
+						ow1.GetComponent<WallBehaviour> ().destructible = false;
+						ow2.GetComponent<WallBehaviour> ().destructible = false;
+						ow3.GetComponent<WallBehaviour> ().destructible = false;
+
+						ow1.GetComponent<WallBehaviour> ().twin = w1;
+						ow2.GetComponent<WallBehaviour> ().twin = w2;
+						ow3.GetComponent<WallBehaviour> ().twin = w3;
 
 						outer_walls.Add (ow1);
 						outer_walls.Add (ow2);
 						outer_walls.Add (ow3);
+
+						immediate_neighbours = new List<GameObject> ();
+						immediate_neighbours.Add (ow1);
+						immediate_neighbours.Add (ow2);
+						immediate_neighbours.Add (ow3);
+
+						ow1.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+						ow2.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+						ow3.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
 					}
 				}
 				else if (rooms [i] [j].with_window) {
-					GameObject w1 = GameObject.Instantiate (wall_prefab);//--------cele 4 ar trebui sa fie distruse toate odata
+					GameObject w1 = GameObject.Instantiate (wall_prefab);
 					GameObject w2 = GameObject.Instantiate (wall_prefab);
 					GameObject w3 = GameObject.Instantiate (wall_prefab);
 					GameObject w4 = GameObject.Instantiate (wall_prefab);
 
 					//any wall that has a window will appear darker because it doesn't receive as much light
-					w1.layer = w2.layer = w3.layer = w4.layer = 8;
+					//w1.layer = w2.layer = w3.layer = w4.layer = 8;
 
 					w1.transform.position = new Vector3 (rooms [i] [j].w.x_pos * uni_scale + x_add, height * 15 / 16, rooms [i] [j].w.z_pos * uni_scale + z_add);
 					w4.transform.position = new Vector3 (rooms [i] [j].w.x_pos * uni_scale + x_add, height * 2 / 16, rooms [i] [j].w.z_pos * uni_scale + z_add);
@@ -559,13 +766,13 @@ public class LoadScene : MonoBehaviour {
 						w3.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].z_pos + rooms [i] [j].z_length - rooms [i] [j].w.z_pos - rooms [i] [j].w.length) * uni_scale);
 					}
 					else if (rooms [i] [j].w.orientation == 2) {
-						w1.transform.localScale = new Vector3 (rooms [i] [j].w.length * 2 * uni_scale, height * 2 / 8, wall_thickness);
+						w1.transform.localScale = new Vector3 (rooms [i] [j].w.length * 2 * uni_scale, height * 1 / 8, wall_thickness);
 						w4.transform.localScale = new Vector3 (rooms [i] [j].w.length * 2 * uni_scale, height * 2 / 8, wall_thickness);
 
 						w2.transform.position = new Vector3 ((rooms [i] [j].x_pos - rooms [i] [j].x_length + rooms [i] [j].w.x_pos - rooms [i] [j].w.length) / 2 * uni_scale + x_add, height / 2, z_aux + z_add);
 						w3.transform.position = new Vector3 ((rooms [i] [j].x_pos + rooms [i] [j].x_length + rooms [i] [j].w.x_pos + rooms [i] [j].w.length) / 2 * uni_scale + x_add, height / 2, z_aux + z_add);
 						w2.transform.localScale = new Vector3 ((rooms [i] [j].w.x_pos - rooms [i] [j].w.length - rooms [i] [j].x_pos + rooms [i] [j].x_length) * uni_scale, height, wall_thickness);
-						w3.transform.localScale = new Vector3 ((rooms[i][j].x_pos+rooms[i][j].x_length-rooms[i][j].w.x_pos-rooms[i][j].w.length) * uni_scale, height, wall_thickness);
+						w3.transform.localScale = new Vector3 ((rooms [i] [j].x_pos + rooms [i] [j].x_length - rooms [i] [j].w.x_pos - rooms [i] [j].w.length) * uni_scale, height, wall_thickness);
 					}
 
 					walls.Add (w1);
@@ -573,31 +780,27 @@ public class LoadScene : MonoBehaviour {
 					walls.Add (w3);
 					walls.Add (w4);
 
+					//no need for wall_neighbours, walls with windows will never be deleted because they are outer-facing
+					immediate_neighbours = new List<GameObject> ();
+					immediate_neighbours.Add (w1);
+					immediate_neighbours.Add (w2);
+					immediate_neighbours.Add (w3);
+					immediate_neighbours.Add (w4);
+
+					w1.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+					w2.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+					w3.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+					w4.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+
 					//the windows can be also be rendered here because they don't appear twice like doors
-					GameObject w = GameObject.Instantiate(window_prefab);
-					w.transform.localScale = new Vector3 (w.transform.localScale.x * uni_scale / original_uni_scale, w.transform.localScale.y * height/original_height, w.transform.localScale.z);
-					w.transform.position = new Vector3 (rooms [i] [j].w.x_pos*uni_scale - x_add, height * 9 / 16, rooms [i] [j].w.z_pos*uni_scale - z_add);//------fara x_add, z_add???
-					if (rooms [i] [j].w.orientation == 1) w.transform.localRotation = Quaternion.Euler (0, 90, 0);
+					GameObject w = CreateWindow(rooms[i][j].w, rooms[i][j].orientation);
 
-					//also, for every window a new point light will be created to further improve lighting
-					GameObject lightGameObject = new GameObject("Window Light");
-					Light lightComp = lightGameObject.AddComponent<Light>();
-					lightGameObject.transform.position = new Vector3(w.transform.position.x,w.transform.position.y+6,w.transform.position.z);
-
-					if (rooms [i] [j].orientation == 1)
-						lightGameObject.transform.position = new Vector3 (lightGameObject.transform.position.x - 4, lightGameObject.transform.position.y, lightGameObject.transform.position.z);
-					else if (rooms [i] [j].orientation == 2)
-						lightGameObject.transform.position = new Vector3 (lightGameObject.transform.position.x, lightGameObject.transform.position.y, lightGameObject.transform.position.z - 4);
-					else if (rooms [i] [j].orientation == 3)
-						lightGameObject.transform.position = new Vector3 (lightGameObject.transform.position.x + 4, lightGameObject.transform.position.y, lightGameObject.transform.position.z);
-					else if (rooms [i] [j].orientation == 4)
-						lightGameObject.transform.position = new Vector3 (lightGameObject.transform.position.x, lightGameObject.transform.position.y, lightGameObject.transform.position.z + 4);
-
-					lightComp.range = 80;
-					lightComp.intensity = 1;
-					lightComp.bounceIntensity = 0;
-					lightComp.shadows = LightShadows.Hard;
-					lightComp.cullingMask = 513;
+					List<GameObject> aux_objs = new List<GameObject> ();
+					aux_objs.Add (w);
+					w1.GetComponent<WallBehaviour> ().aux_objs = aux_objs;
+					w2.GetComponent<WallBehaviour> ().aux_objs = aux_objs;
+					w3.GetComponent<WallBehaviour> ().aux_objs = aux_objs;
+					w4.GetComponent<WallBehaviour> ().aux_objs = aux_objs;
 
 					if (rooms [i] [j].twin_wall == null) {//if it doesn't have a twin then it's an outer wall
 						GameObject ow1 = GameObject.Instantiate (wall_prefab);
@@ -617,7 +820,7 @@ public class LoadScene : MonoBehaviour {
 							ow3.transform.localScale = new Vector3 (wall_thickness, height, (rooms [i] [j].z_pos + rooms [i] [j].z_length - rooms [i] [j].w.z_pos - rooms [i] [j].w.length) * uni_scale);
 						}
 						else if (rooms [i] [j].w.orientation == 2) {
-							ow1.transform.localScale = new Vector3 (rooms [i] [j].w.length * 2 * uni_scale, height * 2 / 8, wall_thickness);
+							ow1.transform.localScale = new Vector3 (rooms [i] [j].w.length * 2 * uni_scale, height * 1 / 8, wall_thickness);
 							ow4.transform.localScale = new Vector3 (rooms [i] [j].w.length * 2 * uni_scale, height * 2 / 8, wall_thickness);
 
 							ow2.transform.position = new Vector3 ((rooms [i] [j].x_pos - rooms [i] [j].x_length + rooms [i] [j].w.x_pos - rooms [i] [j].w.length) / 2 * uni_scale - x_add, height / 2, z_aux - z_add);
@@ -626,18 +829,54 @@ public class LoadScene : MonoBehaviour {
 							ow3.transform.localScale = new Vector3 ((rooms[i][j].x_pos+rooms[i][j].x_length-rooms[i][j].w.x_pos-rooms[i][j].w.length) * uni_scale, height, wall_thickness);
 						}
 
+						//set destructible to false only if a wall has a twin that's an outer wall
+						w1.GetComponent<WallBehaviour> ().destructible = false;
+						w2.GetComponent<WallBehaviour> ().destructible = false;
+						w3.GetComponent<WallBehaviour> ().destructible = false;
+						w4.GetComponent<WallBehaviour> ().destructible = false;
+
+						w1.GetComponent<WallBehaviour> ().twin = ow1;
+						w2.GetComponent<WallBehaviour> ().twin = ow2;
+						w3.GetComponent<WallBehaviour> ().twin = ow3;
+						w4.GetComponent<WallBehaviour> ().twin = ow4;
+
+						ow1.GetComponent<WallBehaviour> ().destructible = false;
+						ow2.GetComponent<WallBehaviour> ().destructible = false;
+						ow3.GetComponent<WallBehaviour> ().destructible = false;
+						ow4.GetComponent<WallBehaviour> ().destructible = false;
+
+						ow1.GetComponent<WallBehaviour> ().twin = w1;
+						ow2.GetComponent<WallBehaviour> ().twin = w2;
+						ow3.GetComponent<WallBehaviour> ().twin = w3;
+						ow4.GetComponent<WallBehaviour> ().twin = w4;
+
 						outer_walls.Add (ow1);
 						outer_walls.Add (ow2);
 						outer_walls.Add (ow3);
 						outer_walls.Add (ow4);
+
+						immediate_neighbours = new List<GameObject> ();
+						immediate_neighbours.Add (ow1);
+						immediate_neighbours.Add (ow2);
+						immediate_neighbours.Add (ow3);
+						immediate_neighbours.Add (ow4);
+
+						ow1.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+						ow2.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+						ow3.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+						ow4.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
 					}
 
 				}
 				else {
 					GameObject w = GameObject.Instantiate (wall_prefab);
-					rooms [i] [j].gameObject = w;//keeps a reference to its own wall gameObject so it can send it to its twin
+					immediate_neighbours = new List<GameObject> ();
+					immediate_neighbours.Add (w);
+					w.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
+
+					rooms [i] [j].comp_gameObjects.Add(w);//keeps a reference to its own wall gameObject so it can send it to its twin
 					w.transform.position = new Vector3 (x_aux + x_add, height / 2, z_aux + z_add);
-					if (!has_window [i]) w.layer = 8;
+					//if (!has_window [i]) w.layer = 8;
 					if (rooms [i] [j].x_length == 0)
 						w.transform.localScale = new Vector3 (wall_thickness, height, rooms [i] [j].z_length * 2 * uni_scale);
 					else
@@ -651,84 +890,41 @@ public class LoadScene : MonoBehaviour {
 							ow.transform.localScale = new Vector3 (wall_thickness, height, rooms [i] [j].z_length * 2 * uni_scale);
 						else
 							ow.transform.localScale = new Vector3 (rooms [i] [j].x_length * 2 * uni_scale, height, wall_thickness);
+
+						w.GetComponent<WallBehaviour> ().destructible = false;
+						w.GetComponent<WallBehaviour> ().twin = ow;
+						ow.GetComponent<WallBehaviour> ().destructible = false;
+						ow.GetComponent<WallBehaviour> ().twin = w;
 						outer_walls.Add (ow);
+						immediate_neighbours = new List<GameObject> ();
+						immediate_neighbours.Add (ow);
+						ow.GetComponent<WallBehaviour> ().wall_neighbours = immediate_neighbours;
 					}
 				}
 			}
 			//set the neighbours for every wall created
 			for (int j = 0; j < walls.Count; j++) {
 				WallBehaviour w = walls[j].GetComponent<WallBehaviour> ();
-				w.neighbours = walls;
+				w.room_neighbours = walls;
 			}
 		}
 
-		//the assignation of the twin gameObjects in the scripts has to
-		//be done after the loop because half the time a twin's gameObject not be created before
-		//so you there is no script in which to put the reference to the gameObject
+		//the assignation of the twin gameObjects in the scripts has to be done
+		//after the loop because half the time a twin's gameObject will be created before
+		//the other's so there is no script in which to put the reference to the gameObject
 		for (int i = 0; i < rooms.Count; i++) {
 			for (int j = 0; j < rooms [i].Count; j++) {
-				if (rooms [i] [j].twin_wall != null && !rooms[i][j].with_door && !rooms[i][j].with_window) {
-					rooms [i] [j].twin_wall.gameObject.GetComponent<WallBehaviour> ().twin = rooms [i] [j].gameObject;
+				if (rooms [i] [j].twin_wall != null && !rooms[i][j].with_window) {//walls near windows will never have twins
+					for (int k = 0; k < rooms [i] [j].comp_gameObjects.Count; k++) {
+						rooms [i] [j].twin_wall.comp_gameObjects [k].GetComponent<WallBehaviour> ().twin = rooms [i] [j].comp_gameObjects [k];
+					}
 				}
 			}
 		}
 
 		for (int j = 0; j < outer_walls.Count; j++) {
 			WallBehaviour w = outer_walls[j].GetComponent<WallBehaviour> ();
-			w.neighbours = outer_walls;
-		}
-
-		//render doors
-		for (int i = 0; i < doors.Count; i++) {
-			GameObject d = GameObject.Instantiate (door_body_prefab);
-			d.transform.position = new Vector3 (doors [i].x_pos*uni_scale, height * 3 / 8, doors [i].z_pos*uni_scale);
-			int rot;
-			if (doors [i].orientation == 1) {
-				rot = 90;
-				d.transform.localScale = new Vector3 (doors [i].z_length * 2 / door_unit_size * d.transform.localScale.x * uni_scale/original_uni_scale, d.transform.localScale.y * height/original_height, d.transform.localScale.z);
-			}
-			else {
-				rot = 0;
-				d.transform.localScale = new Vector3 (doors [i].x_length * 2 / door_unit_size * d.transform.localScale.x * uni_scale/original_uni_scale, d.transform.localScale.y * height/original_height, d.transform.localScale.z);
-			}
-			if (doors [i].hinge_pos == 2)
-				rot += 180;
-			d.transform.rotation = Quaternion.Euler (0, rot, 0);
-
-			GameObject e = GameObject.Instantiate (door_interaction_prefab);
-			e.transform.localScale = new Vector3 (e.transform.localScale.x * uni_scale / original_uni_scale, e.transform.localScale.y * height/original_height, e.transform.localScale.z);
-			if (doors [i].orientation == 1) {
-				if (doors [i].hinge_pos == 1) {
-					e.transform.position = new Vector3 (doors [i].x_pos * uni_scale, height * 3 / 8, (doors [i].z_pos - doors [i].z_length * door_scale) * uni_scale);
-					e.GetComponent<BoxCollider> ().center = new Vector3 (-doors [i].z_length * door_scale * uni_scale / e.transform.localScale.x, 0, 0);
-					e.GetComponent<DoorBehaviour> ().dir = (int)Mathf.Sign (doors [i].x_length) * (-1);
-				}
-				else {
-					e.transform.position = new Vector3 (doors [i].x_pos * uni_scale, height * 3 / 8, (doors [i].z_pos + doors [i].z_length * door_scale) * uni_scale);
-					e.GetComponent<BoxCollider> ().center = new Vector3 (doors [i].z_length * door_scale * uni_scale / e.transform.localScale.x,0,0);
-					e.GetComponent<DoorBehaviour> ().dir = (int)Mathf.Sign (doors [i].x_length);
-				}
-
-				e.transform.rotation = Quaternion.Euler (0, 90, 0);
-				e.GetComponent<BoxCollider> ().size = new Vector3 (e.GetComponent<BoxCollider> ().size.x * doors [i].z_length*2 / door_unit_size, e.GetComponent<BoxCollider> ().size.y, e.GetComponent<BoxCollider> ().size.z);
-			}
-			else{
-				if (doors [i].hinge_pos == 1) {
-					e.transform.position = new Vector3 ((doors [i].x_pos + doors [i].x_length * door_scale) * uni_scale, height * 3 / 8, doors [i].z_pos * uni_scale);
-					e.GetComponent<BoxCollider> ().center = new Vector3 (-doors [i].x_length * door_scale * uni_scale / e.transform.localScale.x, 0, 0);
-					e.GetComponent<DoorBehaviour> ().dir = (int)Mathf.Sign (doors [i].z_length) * (-1);
-				}
-				else {
-					e.transform.position = new Vector3 ((doors [i].x_pos - doors [i].x_length * door_scale) * uni_scale, height * 3 / 8, doors [i].z_pos * uni_scale);
-					e.GetComponent<BoxCollider> ().center = new Vector3 (doors [i].x_length * door_scale * uni_scale / e.transform.localScale.x, 0, 0);
-					e.GetComponent<DoorBehaviour> ().dir = (int)Mathf.Sign (doors [i].z_length);
-				}
-
-				e.transform.rotation = Quaternion.Euler (0, 0, 0);
-				e.GetComponent<BoxCollider> ().size = new Vector3 (e.GetComponent<BoxCollider> ().size.x * doors [i].x_length*2 / door_unit_size, e.GetComponent<BoxCollider> ().size.y, e.GetComponent<BoxCollider> ().size.z);
-
-			}
-			d.transform.parent = e.transform;
+			w.room_neighbours = outer_walls;
 		}
 
 		//eliminate points that are useless
@@ -773,8 +969,7 @@ public class LoadScene : MonoBehaviour {
 				valid_points [i].Remove (eliminated [j]);
 			}
 		}
-
-		float x_min,x_max,z_min,z_max;
+			
 		//instantiate floor and ceiling
 		for (int i=0;i<valid_points.Count;i++){
 			if (valid_points [i].Count < 4)
@@ -844,12 +1039,15 @@ public class LoadScene : MonoBehaviour {
 							GameObject c = GameObject.Instantiate (wall_prefab);
 							c.transform.position = new Vector3 ((positions [valid_points [i] [j]].x + positions [valid_points [i] [j + 1]].x) / 2 * uni_scale, height + 0.2f, (positions [valid_points [i] [j]].z + positions [valid_points [i] [l]].z) / 2 * uni_scale);
 							c.transform.localScale = new Vector3 (Mathf.Abs (positions [valid_points [i] [j]].x - positions [valid_points [i] [j + 1]].x) * uni_scale, 0.4f, Mathf.Abs (positions [valid_points [i] [j]].z - positions [valid_points [i] [l]].z) * uni_scale);// ---wall_thickness/2
+							c.GetComponent<WallBehaviour>().destructible = false;
 							ceiling.Add (c);
+							c.tag = "Ceiling";
 
 							GameObject f = GameObject.Instantiate (wall_prefab);
 							f.transform.position = new Vector3 ((positions [valid_points [i] [j]].x + positions [valid_points [i] [j + 1]].x) / 2 * uni_scale, -0.1f, (positions [valid_points [i] [j]].z + positions [valid_points [i] [l]].z) / 2 * uni_scale);
 							f.transform.localScale = new Vector3 (Mathf.Abs (positions [valid_points [i] [j]].x - positions [valid_points [i] [j + 1]].x) * uni_scale, wall_thickness, Mathf.Abs (positions [valid_points [i] [j]].z - positions [valid_points [i] [l]].z) * uni_scale);// ---wall_thickness/2
-							f.layer = 9;
+							f.GetComponent<WallBehaviour>().destructible = false;
+							f.layer = 8;
 							floor.Add (f);
 							f.tag = "Floor";
 						}
@@ -863,12 +1061,15 @@ public class LoadScene : MonoBehaviour {
 							GameObject c = GameObject.Instantiate (wall_prefab);
 							c.transform.position = new Vector3 ((positions [valid_points [i] [j]].x + positions [valid_points [i] [j + 1]].x) / 2 * uni_scale, height + 0.2f, (positions [valid_points [i] [j]].z + positions [valid_points [i] [0]].z) / 2 * uni_scale);
 							c.transform.localScale = new Vector3 (Mathf.Abs (positions [valid_points [i] [j]].x - positions [valid_points [i] [j + 1]].x) * uni_scale, 0.4f, Mathf.Abs (positions [valid_points [i] [j]].z - positions [valid_points [i] [0]].z) * uni_scale);// ---wall_thickness/2
+							c.GetComponent<WallBehaviour>().destructible = false;
 							ceiling.Add (c);
+							c.tag = "Ceiling";
 
 							GameObject f = GameObject.Instantiate (wall_prefab);
 							f.transform.position = new Vector3 ((positions [valid_points [i] [j]].x + positions [valid_points [i] [j + 1]].x) / 2 * uni_scale, -0.1f, (positions [valid_points [i] [j]].z + positions [valid_points [i] [0]].z) / 2 * uni_scale);
 							f.transform.localScale = new Vector3 (Mathf.Abs (positions [valid_points [i] [j]].x - positions [valid_points [i] [j + 1]].x) * uni_scale, wall_thickness, Mathf.Abs (positions [valid_points [i] [j]].z - positions [valid_points [i] [0]].z) * uni_scale);
-							f.layer = 9;
+							f.GetComponent<WallBehaviour>().destructible = false;
+							f.layer = 8;
 							floor.Add (f);
 							f.tag = "Floor";
 						}
@@ -878,19 +1079,29 @@ public class LoadScene : MonoBehaviour {
 
 			//set the neighbours for every wall created
 			for (int j = 0; j < ceiling.Count; j++) {
-				WallBehaviour w = ceiling[j].GetComponent<WallBehaviour> ();
-				w.neighbours = ceiling;
-				w = floor[j].GetComponent<WallBehaviour> ();
-				w.neighbours = floor;
+				ceiling [j].GetComponent<WallBehaviour> ().room_neighbours = ceiling;
+				floor [j].GetComponent<WallBehaviour> ().room_neighbours = floor;
 			}
 		}
+
+		//activate reticle
+		GameObject.Find("GvrReticle").GetComponent<MeshRenderer>().enabled = true;
 	}
 
-	void Start () {
+	public void StartBuild (string filePath){ //bool fromStreaming, string fileName) {
+		door1_prefabs = Resources.LoadAll ("Doors/Tier 1/prefabs", typeof(GameObject)).Cast<GameObject>().ToArray();
+		door2_prefabs = Resources.LoadAll ("Doors/Tier 2/prefabs", typeof(GameObject)).Cast<GameObject>().ToArray();
+		window1_prefabs = Resources.LoadAll ("Windows/Tier 1/prefabs", typeof(GameObject)).Cast<GameObject>().ToArray();
+		window2_prefabs = Resources.LoadAll ("Windows/Tier 2/prefabs", typeof(GameObject)).Cast<GameObject>().ToArray();
 
-		StartCoroutine (GenerateHouse ());
-	}
-	
-	void Update () {
+		/*
+		string filePath;
+		if (fromStreaming) 
+			filePath = Path.Combine(Application.streamingAssetsPath, fileName);
+		else
+			filePath = Path.Combine(Application.persistentDataPath, fileName);
+		*/
+		//Path.Combine(Application.streamingAssetsPath, "floorplan.obj"
+		StartCoroutine (GenerateHouse (filePath));
 	}
 }
